@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公众号超级排版工具 (复制功能终极修正版)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .active-border {
+            box-shadow: 0 0 0 3px var(--active-color-light, rgba(59, 130, 246, 0.4));
+            border-color: var(--active-color, #3B82F6);
+        }
+        #copy-toast {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+        .preview-element { position: relative; }
+        .delete-btn {
+            position: absolute;
+            top: 1.2em; /* Adjusted for margin */
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(0,0,0,0.5);
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .preview-element:hover .delete-btn { display: flex; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #aaa; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">公众号超级排版工具</h1>
+            <p class="mt-2 text-gray-600">模块化添加内容，自由排版，一键复制。</p>
+        </header>
+
+        <main class="bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-8">
+                
+                <!-- 左侧控制区 -->
+                <div class="xl:col-span-2">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">① 组件添加区</h3>
+                    <div class="space-y-4">
+                        <!-- 组件输入框 -->
+                        <div id="component-adder"></div>
+                    </div>
+                </div>
+
+                <!-- 右侧预览与控制区 -->
+                <div class="xl:col-span-3">
+                    <div class="mb-4">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2 border-b pb-2">② 风格与预览</h3>
+                        <div class="mb-4">
+                            <label class="block text-md font-medium text-gray-700 mb-2">选择色系</label>
+                            <div id="colorOptions" class="flex flex-wrap gap-3"></div>
+                        </div>
+                        <div>
+                            <label class="block text-md font-medium text-gray-700 mb-2">选择二级标题风格</label>
+                            <div id="styleOptions" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+                        </div>
+                    </div>
+                    
+                    <div id="preview-container" class="mt-6">
+                         <div id="preview" class="p-4 border-2 border-dashed border-gray-200 rounded-lg bg-white min-h-[400px] max-h-[600px] overflow-y-auto">
+                            <p class="placeholder-text text-gray-400 text-center mt-4">从左侧添加内容，开始您的创作之旅</p>
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-2 gap-4 mt-6">
+                        <button id="copyButton" class="w-full text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-4 transition-all duration-300 text-lg shadow-md hover:shadow-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                            复制HTML
+                        </button>
+                         <button id="clearButton" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-4 focus:ring-gray-300 transition-all duration-300 text-lg shadow-md hover:shadow-lg flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            清空内容
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="copy-toast" class="fixed top-5 right-5 bg-green-500 text-white py-2 px-5 rounded-lg shadow-xl opacity-0 transform translate-y-2">复制成功！</div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- 数据定义 ---
+        const colorPalettes = {
+            summer: { name: '清新夏日', main: '#81c784', light: '#e8f5e9', dark: '#2e7d32', accent: '#ffb74d', ring: 'rgba(129, 199, 132, 0.4)' },
+            blue: { name: '商务蓝', main: '#2563eb', light: '#eff6ff', dark: '#1e40af', accent: '#f59e0b', ring: 'rgba(37, 99, 235, 0.4)' },
+            orange: { name: '活力橙', main: '#f97316', light: '#fff7ed', dark: '#9a3412', accent: '#10b981', ring: 'rgba(249, 115, 22, 0.4)' },
+            tiffany: { name: '蒂芙尼蓝', main: '#0ABAB5', light: '#e0f7fa', dark: '#004d40', accent: '#f472b6', ring: 'rgba(10, 171, 181, 0.4)' },
+            rose: { name: '玫瑰金', main: '#d81b60', light: '#fce4ec', dark: '#880e4f', accent: '#2dd4bf', ring: 'rgba(216, 27, 96, 0.4)' },
+            morandi: { name: '莫兰迪粉', main: '#E5A2A6', light: '#F9F1F1', dark: '#A36B6F', accent: '#A2B2E5', ring: 'rgba(229, 162, 166, 0.4)' },
+            khaki: { name: '卡其棕', main: '#BCA992', light: '#F7F5F2', dark: '#8C7D6B', accent: '#809B8A', ring: 'rgba(188, 169, 146, 0.4)' },
+            deepblue: { name: '深海蓝', main: '#304A6E', light: '#EBF0F6', dark: '#1A293F', accent: '#F0C987', ring: 'rgba(48, 74, 110, 0.4)' },
+            gray: { name: '石墨灰', main: '#616161', light: '#f5f5f5', dark: '#212121', accent: '#ef4444', ring: 'rgba(97, 97, 97, 0.4)' }
+        };
+
+        const styleTemplates = {
+            h2: {
+                style1: {
+                    name: '简约左边框',
+                    preview: c => `<div class="h-full border-l-4 pl-2 flex items-center" style="border-color:${c.main};"><p class="font-bold text-gray-700 text-xs">简约左边框</p></div>`,
+                    generate: (text, c) => `<h2 style="border-left:4px solid ${c.main};padding:8px 16px;background-color:${c.light};font-size:18px;font-weight:bold;color:#1f2937;margin:1.2em 0;line-height:1.6;">${text}</h2>`
+                },
+                style7: {
+                    name: '实心背景',
+                    preview: c => `<div class="h-full flex items-center rounded-md px-2" style="background-color:${c.main};"><p class="font-bold text-white text-xs">实心背景</p></div>`,
+                    generate: (text, c) => `<h2 style="background-color:${c.main};color:white;padding:12px 20px;border-radius:8px;font-size:18px;font-weight:bold;margin:1.2em 0;line-height:1.6;">${text}</h2>`
+                },
+                style5: {
+                    name: '圆角胶囊',
+                    preview: c => `<div class="h-full flex items-center"><span class="rounded-full font-bold px-2 py-1 text-xs" style="background-color:${c.light};color:${c.dark};">圆角胶囊</span></div>`,
+                    generate: (text, c) => `<h2 style="margin:1.2em 0;"><span style="background-color:${c.light};color:${c.dark};border-radius:9999px;padding:8px 20px;font-size:17px;font-weight:bold;display:inline-block;line-height:1.6;">${text}</span></h2>`
+                }
+            },
+            p: { generate: text => `<p style="font-size:16px;color:#374151;line-height:1.8;text-align:justify;margin:1.2em 0;">${text}</p>` },
+            ol: { generate: (text, num, c) => `<div style="display:flex;align-items:flex-start;margin:1.5em 0;text-align:left;"><span style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background-color:${c.accent};color:white;font-size:16px;font-weight:bold;margin-right:15px;flex-shrink:0;">${String(num).padStart(2, '0')}</span><p style="font-size:16px;color:#374151;margin:0;padding-top:4px;line-height:1.8;">${text}</p></div>` },
+            blockquote: { generate: (text, c) => `<blockquote style="background-color:${c.light};border:2px dashed ${c.main};padding:15px 20px;margin:1.2em 0;text-align:left;"><p style="font-size:15px;color:#586069;line-height:1.7;margin:0;">${text}</p></blockquote>` },
+            img: { generate: src => `<img src="${src}" style="max-width:100%;height:auto;border-radius:8px;margin:1.2em 0;border:1px solid #e5e7eb;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);" alt="用户上传图片" onerror="this.style.display='none'"/>` }
+        };
+        
+        const componentInputs = [
+            { id: 'h2', label: '二级标题', type: 'input', placeholder: '输入标题内容' },
+            { id: 'p', label: '正文段落', type: 'textarea', placeholder: '输入段落内容' },
+            { id: 'ol', label: '有序列表项', type: 'input', placeholder: '输入列表项内容' },
+            { id: 'blockquote', label: '引言内容', type: 'textarea', placeholder: '输入引言内容' },
+            { id: 'img', label: '图片链接', type: 'input', placeholder: '粘贴图片URL' }
+        ];
+
+        let activeColorKey = 'summer';
+        let activeH2StyleKey = 'style7';
+        let olCounter = 1;
+
+        const [
+            preview, colorOptionsContainer, styleOptionsContainer,
+            copyButton, clearButton, toast, componentAdder
+        ] = [
+            'preview', 'colorOptions', 'styleOptions',
+            'copyButton', 'clearButton', 'copy-toast', 'component-adder'
+        ].map(id => document.getElementById(id));
+
+        const renderUI = () => {
+            const colors = colorPalettes[activeColorKey];
+            colorOptionsContainer.innerHTML = Object.keys(colorPalettes).map(key => {
+                const p = colorPalettes[key];
+                return `<button data-color="${key}" title="${p.name}" class="p-1 border-2 rounded-full flex items-center gap-2 transition-all duration-200 ${key === activeColorKey ? 'active-border' : 'border-transparent'}" style="--active-color:${p.main};--active-color-light:${p.ring};"><span class="w-6 h-6 rounded-full" style="background-color:${p.main};"></span></button>`;
+            }).join('');
+            
+            styleOptionsContainer.innerHTML = Object.keys(styleTemplates.h2).map(key => {
+                const s = styleTemplates.h2[key];
+                return `<button data-style="${key}" class="p-2 border-2 rounded-lg h-16 transition-all duration-200 text-left ${key === activeH2StyleKey ? 'active-border' : 'border-gray-200'}" style="--active-color:${colors.main};--active-color-light:${colors.ring};">${s.preview(colors)}</button>`;
+            }).join('');
+            
+            copyButton.style.backgroundColor = colors.main;
+            copyButton.style.setProperty('--tw-ring-color', colors.ring);
+        };
+
+        const renderComponentAdder = () => {
+            componentAdder.innerHTML = componentInputs.map(item => `
+                <div class="bg-gray-50 p-3 rounded-lg border">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">${item.label}</label>
+                    ${item.type === 'textarea'
+                        ? `<textarea id="input-${item.id}" class="w-full p-2 border border-gray-300 rounded-md text-sm" rows="3" placeholder="${item.placeholder}"></textarea>`
+                        : `<input type="text" id="input-${item.id}" class="w-full p-2 border border-gray-300 rounded-md text-sm" placeholder="${item.placeholder}">`
+                    }
+                    <button data-type="${item.id}" class="add-btn mt-2 w-full text-sm font-semibold py-2 px-4 rounded-md transition-colors text-white">添加</button>
+                </div>
+            `).join('');
+            updateAddButtonColors();
+        };
+        
+        const updateAddButtonColors = () => {
+            const colors = colorPalettes[activeColorKey];
+            document.querySelectorAll('.add-btn').forEach(btn => {
+                btn.style.backgroundColor = colors.main;
+                btn.style.opacity = '0.9';
+                btn.onmouseover = () => btn.style.opacity = '1';
+                btn.onmouseout = () => btn.style.opacity = '0.9';
+            });
+        };
+
+        const resetPreview = () => {
+            preview.innerHTML = '<p class="placeholder-text text-gray-400 text-center mt-4">从左侧添加内容，开始您的创作之旅</p>';
+            olCounter = 1;
+        }
+
+        const addElementToPreview = (type) => {
+            const input = document.getElementById(`input-${type}`);
+            const text = input.value.trim();
+            if (!text) {
+                alert('请输入内容！');
+                return;
+            }
+            
+            let contentBox = document.getElementById('article-content-box');
+            if (!contentBox) {
+                preview.innerHTML = ''; // Clear placeholder
+                contentBox = document.createElement('div');
+                contentBox.id = 'article-content-box';
+                contentBox.style.cssText = `background-color: #f7f8fa; padding: 10px 20px; border-radius: 12px;`;
+                preview.appendChild(contentBox);
+            }
+
+            const colors = colorPalettes[activeColorKey];
+            let html;
+
+            switch(type) {
+                case 'h2':
+                    html = styleTemplates.h2[activeH2StyleKey].generate(text, colors);
+                    olCounter = 1;
+                    break;
+                case 'p':
+                    html = styleTemplates.p.generate(text);
+                    olCounter = 1;
+                    break;
+                case 'ol':
+                    html = styleTemplates.ol.generate(text, olCounter++, colors);
+                    break;
+                case 'blockquote':
+                    html = styleTemplates.blockquote.generate(text, colors);
+                    olCounter = 1;
+                    break;
+                case 'img':
+                    html = styleTemplates.img.generate(text);
+                    olCounter = 1;
+                    break;
+            }
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'preview-element';
+            wrapper.innerHTML = `${html}<div class="delete-btn"><span>×</span></div>`;
+            contentBox.appendChild(wrapper);
+            input.value = '';
+        };
+
+        // Event Listeners
+        componentAdder.addEventListener('click', e => {
+            if (e.target.classList.contains('add-btn')) {
+                addElementToPreview(e.target.dataset.type);
+            }
+        });
+
+        preview.addEventListener('click', e => {
+            const deleteBtn = e.target.closest('.delete-btn');
+            if (deleteBtn) {
+                const elementToRemove = deleteBtn.closest('.preview-element');
+                const contentBox = document.getElementById('article-content-box');
+                elementToRemove.remove();
+                if (contentBox && contentBox.children.length === 0) {
+                    resetPreview();
+                }
+            }
+        });
+
+        colorOptionsContainer.addEventListener('click', e => {
+            const button = e.target.closest('button');
+            if (button) {
+                activeColorKey = button.dataset.color;
+                renderUI();
+                updateAddButtonColors();
+            }
+        });
+
+        styleOptionsContainer.addEventListener('click', e => {
+            const button = e.target.closest('button');
+            if (button) {
+                activeH2StyleKey = button.dataset.style;
+                renderUI();
+            }
+        });
+
+        copyButton.addEventListener('click', () => {
+            if (preview.querySelector('.placeholder-text')) {
+                alert('没有内容可以复制！'); return;
+            }
+            const contentBox = document.getElementById('article-content-box');
+            if (!contentBox) {
+                alert('没有内容可以复制！'); return;
+            }
+
+            // *** TOTALLY REWRITTEN, ROBUST COPY LOGIC ***
+            const finalHtmlToCopy = contentBox.outerHTML;
+
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.innerHTML = finalHtmlToCopy;
+            document.body.appendChild(tempContainer);
+
+            const range = document.createRange();
+            range.selectNodeContents(tempContainer);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            let success = false;
+            try {
+                success = document.execCommand('copy');
+            } catch (err) {
+                console.error('Copy command failed', err);
+            }
+
+            selection.removeAllRanges();
+            document.body.removeChild(tempContainer);
+
+            if (success) {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+                setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); }, 2000);
+            } else {
+                alert('复制失败！您的浏览器可能不支持此操作。');
+            }
+        });
+
+        clearButton.addEventListener('click', () => {
+            resetPreview();
+        });
+
+        // Initial Load
+        renderComponentAdder();
+        renderUI();
+    });
+    </script>
+</body>
+</html>
